@@ -1,15 +1,16 @@
-# Notion AI Bot - Stealth Edition 🕵️
+# Notion AI Bot - Productivity Edition 🕵️
 
-A stealthy automation system that connects Notion to ChatGPT, designed to work around corporate restrictions while appearing as a legitimate system monitor.
+A modern, async automation system that connects Notion to ChatGPT, designed to boost productivity by automating knowledge work, answering questions, and streamlining your workflow—all from your Notion workspace.
 
 ## 🎯 Features
 
-- **Stealth Mode**: Appears as a system monitor to avoid detection
-- **Continuous Polling**: Adaptive intervals (30s-5min) based on activity
+- **Productivity Boost**: Automate Q&A, research, and documentation in Notion
+- **Async & Fast Mode**: Instant response with FAST_MODE, or tune delays for batching
+- **Continuous Polling**: Adaptive intervals (configurable)
 - **Free Tier Optimized**: Uses GPT-3.5-turbo with token limits
 - **Web Interface**: Monitor status via browser
 - **Error Handling**: Robust error recovery and logging
-- **Random Delays**: Avoids detection patterns
+- **Random Delays**: Avoids detection patterns (unless FAST_MODE)
 
 ## 🚀 Quick Start
 
@@ -19,14 +20,11 @@ A stealthy automation system that connects Notion to ChatGPT, designed to work a
 # Clone and navigate to project
 git clone <your-repo>
 cd notion-ai-bot
-
-# Run the deployment script
-python deploy.py
 ```
 
 ### 2. Configure API Keys
 
-The script will create a `.env` file. Fill in your API keys:
+Create a `.env` file (not included in repo):
 
 ```env
 NOTION_DB_ID=your_database_id_here
@@ -34,15 +32,39 @@ NOTION_API_KEY=your_notion_api_key_here
 OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-### 3. Create Notion Database
+### 3. (Optional) Enable Fast Mode or Custom Delays
+
+For instant response:
+
+```env
+FAST_MODE=1
+```
+
+Or, for custom delays:
+
+```env
+FAST_MODE=0
+MIN_POLL_INTERVAL=5
+MAX_POLL_INTERVAL=30
+PROMPT_DELAY_MIN=0.5
+PROMPT_DELAY_MAX=1.0
+NOTION_QUERY_DELAY_MIN=0.1
+NOTION_QUERY_DELAY_MAX=0.5
+NOTION_UPDATE_DELAY_MIN=0.1
+NOTION_UPDATE_DELAY_MAX=0.5
+JITTER=1
+```
+
+### 4. Create Notion Database
 
 Create a Notion database with these properties:
 
 - **Prompt** (Title): Your questions/tasks
 - **Status** (Select): Pending/Done
 - **Response** (Rich Text): AI responses
+- **Generated Date** (Date): When response was generated (date+time)
 
-### 4. Run the Bot
+### 5. Run the Bot
 
 ```bash
 # Web interface (recommended)
@@ -54,154 +76,50 @@ python main.py
 
 ## 🔧 Setup Details
 
-### Getting Notion API Keys
+- **No secrets or API keys are in this repo.**
+- **.env is gitignored and must be created by you.**
+- **Safe for public GitHub.**
 
-1. Go to [Notion Integrations](https://www.notion.so/my-integrations)
-2. Create new integration
-3. Copy the API key
-4. Share your database with the integration
+## 🕵️ Productivity & Async Features
 
-### Getting OpenAI API Key
-
-1. Go to [OpenAI Platform](https://platform.openai.com/api-keys)
-2. Create new API key
-3. Add billing info (free tier available)
-
-### Database ID
-
-1. Open your Notion database
-2. Copy the ID from the URL: `https://notion.so/workspace/[DATABASE_ID]`
-
-## 🕵️ Stealth Features
-
-### Detection Avoidance
-
-- **Random Delays**: 0.5-3s random delays between requests
-- **Adaptive Polling**: Slower when idle, faster when busy
-- **Jitter**: ±5s variation in polling intervals
-- **Stealth Logging**: Logs saved to file, not console
-- **Generic Names**: Uses "System Monitor" branding
-
-### Web Interface
-
-- Looks like a legitimate system monitor
-- No obvious AI/ChatGPT references
-- Clean, professional interface
-- Real-time status monitoring
-
-### Cost Optimization
-
-- GPT-3.5-turbo (cheaper than GPT-4)
-- Token limits (500 max tokens)
-- Efficient prompt processing
-- Free tier compatible
+- **Async**: All Notion/OpenAI calls are async for speed and scalability
+- **FAST_MODE**: All delays minimized for instant response
+- **Configurable**: All delays and intervals can be set via env vars
+- **No local traces**: All processing is in the cloud
 
 ## 📊 Usage
 
-### Adding Tasks
-
-1. Open your Notion database
-2. Add new row with your prompt in the "Prompt" field
-3. Set status to "Pending"
-4. Bot will automatically process and respond
-
-### Monitoring
-
-- **Web**: Visit `http://localhost:8000`
-- **Logs**: Check `notion_bot.log`
-- **Status**: Real-time processing status
+- Add prompts to Notion, set status to Pending
+- Bot will process and update with response and timestamp
+- Monitor via web interface or logs
 
 ## 🔒 Security & Privacy
 
-### Corporate Compliance
-
-- No ChatGPT web access required
-- All AI processing happens externally
-- Notion remains the only visible interface
-- No suspicious network traffic patterns
-
-### Data Handling
-
-- Responses truncated to 1900 characters
-- Timestamps added to all responses
-- Error handling prevents data loss
-- No sensitive data stored locally
+- No API keys or secrets in code or repo
+- .env is gitignored
+- All cloud-to-cloud (no local traces)
 
 ## 🛠️ Troubleshooting
 
-### Common Issues
-
-**"Missing environment variables"**
-
-- Check your `.env` file exists
-- Verify all API keys are set correctly
-
-**"Failed to fetch prompts"**
-
-- Check Notion API key
-- Verify database ID
-- Ensure integration has access to database
-
-**"Error calling ChatGPT"**
-
-- Check OpenAI API key
-- Verify billing is set up
-- Check internet connection
-
-### Logs
-
-Check `notion_bot.log` for detailed error information.
+- Check logs for errors
+- Ensure all environment variables are set
+- See COST_MONITORING.md for cost tips
 
 ## 🚀 Deployment Options
 
-### Local Development
-
-```bash
-python deploy.py
-```
-
-### Cloud Deployment
-
-- **Railway**: Easy deployment with environment variables
-- **Heroku**: Free tier available
-- **VPS**: Full control, more stealth
-
-### Docker (Advanced)
-
-```dockerfile
-FROM python:3.9-slim
-COPY . /app
-WORKDIR /app
-RUN pip install -r requirements.txt
-CMD ["python", "app.py"]
-```
+- **Railway**: Free 24/7 hosting (see DEPLOYMENT_GUIDE.md)
+- **Render**: Free alternative
+- **VPS/Docker**: Supported
 
 ## 📈 Advanced Configuration
 
-### Custom Polling Intervals
-
-Add to `.env`:
-
-```env
-MIN_POLL_INTERVAL=30
-MAX_POLL_INTERVAL=300
-```
-
-### Custom Models
-
-Edit `main.py` to use different models:
-
-```python
-# For GPT-4 (more expensive)
-model="gpt-4"
-
-# For Claude (alternative)
-model="claude-3-sonnet-20240229"
-```
+- All delays and intervals are configurable via env vars
+- FAST_MODE=1 for instant response
+- See NOTION_SETUP.md for Notion database setup
 
 ## 🤝 Contributing
 
-This is a stealth project - keep it low-key!
+Safe for public GitHub. No secrets in repo.
 
 ## ⚠️ Disclaimer
 
@@ -209,4 +127,4 @@ This tool is designed for legitimate productivity use. Ensure compliance with yo
 
 ---
 
-**Happy coding! 🚀**
+**Happy automating! 🚀**

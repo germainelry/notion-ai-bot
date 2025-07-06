@@ -1,4 +1,4 @@
-# 📅 Notion Database Setup Guide
+# 📅 Notion Database Setup Guide (Async & Fast Mode Ready)
 
 ## Required Database Columns
 
@@ -24,7 +24,7 @@ Your Notion database needs these columns for the bot to work properly:
 - **Purpose**: AI-generated responses
 - **Required**: ✅ Yes
 
-### 4. **Generated Date** (Date) - NEW!
+### 4. **Generated Date** (Date)
 
 - **Type**: Date
 - **Purpose**: When the response was generated (includes both date and time)
@@ -55,6 +55,8 @@ Your Notion database needs these columns for the bot to work properly:
 
 ## Benefits of This Setup
 
+✅ **Async & Fast Mode**: Bot is fully async and can be set to instant response
+✅ **Configurable Delays**: All delays and intervals are configurable via env vars
 ✅ **Clean Responses**: No timestamp clutter in the response text
 ✅ **Sortable**: You can sort by generation date
 ✅ **Filterable**: Filter by date ranges
@@ -67,9 +69,17 @@ Your Notion database needs these columns for the bot to work properly:
 
 1. Add a new row with a prompt
 2. Set status to "Pending"
-3. Run your bot: `python main.py`
+3. Run your bot: `python main.py` or deploy to Railway
 4. Check that "Generated Date" is filled with date and time
 5. Verify the response is clean (no timestamp prefix)
+
+---
+
+## Security & Public Repo Notes
+
+- **No secrets or API keys are in this repo.**
+- **.env is gitignored and must be created by you.**
+- **Safe for public GitHub.**
 
 ---
 
@@ -79,11 +89,6 @@ Your Notion database needs these columns for the bot to work properly:
 
 - Make sure column names match exactly (case-sensitive)
 - Check that the column types are correct
-
-**Date not showing:**
-
-- Ensure the "Generated Date" column is set to Date type
-- Check that your Notion integration has edit permissions
 
 **Date not showing:**
 

@@ -1,4 +1,4 @@
-# Cloud Deployment Guide
+# Cloud Deployment Guide (Async & Fast Mode Ready)
 
 ## Quick Deployment Options
 
@@ -27,13 +27,29 @@
 
 4. **Add environment variables:**
 
-   ```
-   NOTION_DB_ID=your_database_id_here
-   NOTION_API_KEY=your_notion_api_key_here
-   OPENAI_API_KEY=your_openai_api_key_here
-   MIN_POLL_INTERVAL=30
-   MAX_POLL_INTERVAL=300
-   ```
+   - **Required:**
+     ```
+     NOTION_DB_ID=your_database_id_here
+     NOTION_API_KEY=your_notion_api_key_here
+     OPENAI_API_KEY=your_openai_api_key_here
+     ```
+   - **Optional (for fast mode):**
+     ```
+     FAST_MODE=1
+     ```
+   - **Optional (for custom delays):**
+     ```
+     FAST_MODE=0
+     MIN_POLL_INTERVAL=5
+     MAX_POLL_INTERVAL=30
+     PROMPT_DELAY_MIN=0.5
+     PROMPT_DELAY_MAX=1.0
+     NOTION_QUERY_DELAY_MIN=0.1
+     NOTION_QUERY_DELAY_MAX=0.5
+     NOTION_UPDATE_DELAY_MIN=0.1
+     NOTION_UPDATE_DELAY_MAX=0.5
+     JITTER=1
+     ```
 
 5. **Deploy and monitor:**
    - Click "Deploy"
@@ -52,21 +68,15 @@
 
 ## Environment Variables
 
-Add these to your cloud platform:
-
-```
-NOTION_DB_ID=your_database_id_here
-NOTION_API_KEY=your_notion_api_key_here
-OPENAI_API_KEY=your_openai_api_key_here
-MIN_POLL_INTERVAL=30
-MAX_POLL_INTERVAL=300
-```
+- **No secrets or API keys are in this repo.**
+- **.env is gitignored and must be created by you.**
+- **Safe for public GitHub.**
 
 ## Testing Your Deployment
 
 1. Add a test prompt to your Notion database
 2. Set status to "Pending"
-3. Wait 30-60 seconds
+3. Wait a few seconds (FAST_MODE) or up to your polling interval
 4. Check if the response appears
 5. Verify the "Generated Date" is filled
 
@@ -103,6 +113,7 @@ MAX_POLL_INTERVAL=300
 - Keep API keys secure in cloud platform
 - Use environment variables, not hardcoded values
 - Monitor for unusual activity
+- **This project is safe for public GitHub.**
 
 ## Next Steps
 
