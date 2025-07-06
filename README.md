@@ -1,6 +1,8 @@
-# Notion AI Bot - Productivity Edition 🚀
+# Notion AI Bot - Async Automation with ChatGPT & Notion 🚀
 
-A modern, async automation system that connects Notion to ChatGPT, designed to boost productivity by automating knowledge work, answering questions, and streamlining your workflow—all from your Notion workspace.
+A modern, async automation system that seamlessly connects Notion to OpenAI's ChatGPT, designed to boost productivity by automating knowledge work, answering questions, and streamlining your workflow — all within your Notion workspace.
+
+This lightweight Python bot continuously monitors a Notion database for new prompts (Status = Pending), sends them to ChatGPT (GPT-3.5 or GPT-4), and writes the generated responses directly back into the Notion table — making it your personal AI assistant for study notes, coding help, or content drafting.
 
 ## 🎯 Features
 
