@@ -1,17 +1,19 @@
 import os, time, requests
 import openai
+from openai import OpenAI
 
+
+# ✅ Load env vars
 NOTION_DB_ID = os.getenv("NOTION_DB_ID")
 NOTION_API_KEY = os.getenv("NOTION_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
-openai.api_key = OPENAI_API_KEY
-
 NOTION_HEADERS = {
     "Authorization": f"Bearer {NOTION_API_KEY}",
     "Notion-Version": "2022-06-28",
     "Content-Type": "application/json"
 }
+
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 def get_pending_prompts():
     url = f"https://api.notion.com/v1/databases/{NOTION_DB_ID}/query"
@@ -31,12 +33,13 @@ def get_pending_prompts():
     return res.json().get("results", [])
 
 def ask_chatgpt(prompt):
-    res = openai.ChatCompletion.create(
-        model="gpt-4",
+    res = client.chat.completions.create(
+        model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.3
     )
     return res.choices[0].message.content
+
 
 def update_response(page_id, response):
     url = f"https://api.notion.com/v1/pages/{page_id}"
