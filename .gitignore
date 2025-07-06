@@ -93,3 +93,10 @@ coverage.xml
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# Test files
+test_code_extraction.py
+
+# Memory and data files
+notion_bot_memory.json
+extracted_code/
