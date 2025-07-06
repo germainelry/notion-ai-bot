@@ -19,10 +19,20 @@ def get_pending_prompts():
     url = f"https://api.notion.com/v1/databases/{NOTION_DB_ID}/query"
     body = {
         "filter": {
-            "property": "Status",
-            "select": {
-                "equals": "Pending"
-            }
+            "and": [
+                {
+                    "property": "Status",
+                    "select": {
+                        "equals": "Pending"
+                    }
+                },
+                {
+                    "property": "Response",
+                    "rich_text": {
+                        "is_empty": True
+                    }
+                }
+            ]
         }
     }
     res = requests.post(url, headers=NOTION_HEADERS, json=body)
