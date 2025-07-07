@@ -389,4 +389,4 @@ if __name__ == "__main__":
         else:
             print("Usage: python main.py [memory|search <query>]")
     else:
-    asyncio.run(main())
+        asyncio.run(main())
