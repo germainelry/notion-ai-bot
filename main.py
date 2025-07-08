@@ -5,6 +5,9 @@ import httpx
 import openai
 from openai import AsyncOpenAI
 from concurrent.futures import ThreadPoolExecutor
+import aiosqlite
+from memory_db import MemoryDB
+import ast
 
 # Load environment variables
 load_dotenv()
@@ -59,54 +62,8 @@ except Exception:
 # ThreadPool for sync OpenAI fallback
 thread_pool = ThreadPoolExecutor()
 
-# Memory system for tracking prompts and responses
-class MemorySystem:
-    def __init__(self):
-        self.memory_file = "notion_bot_memory.json"
-        self.memory = self.load_memory()
-    
-    def load_memory(self):
-        try:
-            import json
-            with open(self.memory_file, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except FileNotFoundError:
-            return {"prompts": [], "responses": [], "statistics": {"total_processed": 0}}
-    
-    def save_memory(self):
-        import json
-        with open(self.memory_file, 'w', encoding='utf-8') as f:
-            json.dump(self.memory, f, indent=2, ensure_ascii=False)
-    
-    def add_entry(self, prompt, response, page_id, extracted_codes=None):
-        entry = {
-            "timestamp": datetime.now().isoformat(),
-            "page_id": page_id,
-            "prompt": prompt,
-            "response": response,
-            "response_length": len(response),
-            "code_blocks": extracted_codes or []
-        }
-        self.memory["prompts"].append(entry)
-        self.memory["statistics"]["total_processed"] += 1
-        self.save_memory()
-        logging.info(f"Memory: Added entry for page {page_id} (Total: {self.memory['statistics']['total_processed']})")
-    
-    def get_recent_prompts(self, limit=10):
-        return self.memory["prompts"][-limit:]
-    
-    def search_memory(self, query):
-        """Search through memory for similar prompts"""
-        import difflib
-        results = []
-        for entry in self.memory["prompts"]:
-            similarity = difflib.SequenceMatcher(None, query.lower(), entry["prompt"].lower()).ratio()
-            if similarity > 0.3:  # 30% similarity threshold
-                results.append((similarity, entry))
-        return sorted(results, key=lambda x: x[0], reverse=True)
-
-# Initialize memory system
-memory_system = MemorySystem()
+# Initialize async memory system
+memory_db = MemoryDB()
 
 async def get_pending_prompts():
     url = f"https://api.notion.com/v1/databases/{NOTION_DB_ID}/query"
@@ -130,14 +87,21 @@ async def get_pending_prompts():
             logging.error(f"Error fetching prompts: {e}")
             return []
 
-async def ask_chatgpt(prompt):
+async def ask_chatgpt_with_context(prompt):
+    # Fetch last 5 prompt/response pairs for context
+    recent_pairs = await memory_db.get_recent_prompts(limit=5)
+    messages = []
+    for prev_prompt, prev_response in reversed(recent_pairs):
+        messages.append({"role": "user", "content": prev_prompt})
+        messages.append({"role": "assistant", "content": prev_response})
+    messages.append({"role": "user", "content": prompt})
     try:
         if async_openai_client:
             res = await async_openai_client.chat.completions.create(
                 model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content": prompt}],
+                messages=messages,
                 temperature=0.3,
-                max_tokens=1000,  # Increased for better code responses
+                max_tokens=1000,
                 presence_penalty=0.1,
                 frequency_penalty=0.1
             )
@@ -322,21 +286,16 @@ async def continuous_polling():
                     prompt_text = p["properties"]["Prompt"]["title"][0]["text"]["content"]
                     page_id = p["id"]
                     logging.info(f"Processing: {prompt_text[:50]}...")
-                    
-                    # Check memory for similar prompts
-                    similar_prompts = memory_system.search_memory(prompt_text)
-                    if similar_prompts:
-                        logging.info(f"Memory: Found {len(similar_prompts)} similar previous prompts")
-                        # You could use this to provide context to ChatGPT
-                    
-                    reply = await ask_chatgpt(prompt_text)
-                    
+
+                    # Use previous context for ChatGPT
+                    reply = await ask_chatgpt_with_context(prompt_text)
+
                     # Extract code blocks for memory storage
                     _, extracted_codes = extract_code_blocks(reply)
-                    
-                    # Store in memory
-                    memory_system.add_entry(prompt_text, reply, page_id, extracted_codes)
-                    
+
+                    # Store in memory DB
+                    await memory_db.add_entry(prompt_text, reply, page_id, extracted_codes)
+
                     if await update_response(page_id, reply):
                         logging.info(f"Updated page: {page_id}")
                     else:
@@ -366,27 +325,35 @@ async def main():
     if not all([NOTION_DB_ID, NOTION_API_KEY, OPENAI_API_KEY]):
         logging.error("Missing required environment variables!")
         return
+    await memory_db.init()
     await continuous_polling()
 
 if __name__ == "__main__":
     import sys
+    import asyncio
     
     if len(sys.argv) > 1:
         if sys.argv[1] == "memory":
             # Show memory statistics
-            print(f"Total prompts processed: {memory_system.memory['statistics']['total_processed']}")
+            count = asyncio.run(memory_db.count())
+            print(f"Total prompts processed: {count}")
             print("\nRecent prompts:")
-            for entry in memory_system.get_recent_prompts(5):
-                code_info = f" ({len(entry.get('code_blocks', []))} code blocks)" if entry.get('code_blocks') else ""
-                print(f"- {entry['timestamp']}: {entry['prompt'][:100]}...{code_info}")
+            recent = asyncio.run(memory_db.get_recent_entries(5))
+            for entry in recent:
+                timestamp, prompt, response, code_blocks = entry
+                code_info = f" ({len(ast.literal_eval(code_blocks))} code blocks)" if code_blocks else ""
+                print(f"- {timestamp}: {prompt[:100]}...{code_info}")
         elif sys.argv[1] == "search" and len(sys.argv) > 2:
             # Search memory
             query = " ".join(sys.argv[2:])
-            results = memory_system.search_memory(query)
+            results = asyncio.run(memory_db.search_memory(query))
             print(f"Search results for '{query}':")
-            for similarity, entry in results[:5]:
-                print(f"- {similarity:.2f}: {entry['prompt'][:100]}...")
+            for similarity, prompt, response, timestamp, code_blocks in results:
+                print(f"- {similarity:.2f}: {prompt[:100]}...")
+        elif sys.argv[1] == "reset":
+            asyncio.run(memory_db.clear())
+            print("Memory reset. All previous prompts forgotten.")
         else:
-            print("Usage: python main.py [memory|search <query>]")
+            print("Usage: python main.py [memory|search <query>|reset]")
     else:
         asyncio.run(main())

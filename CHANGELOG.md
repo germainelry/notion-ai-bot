@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.1.0] - 2025-07-07
+
+### 🆕 Improvements
+
+#### Memory System Migration
+
+- **Memory system migrated from JSON file (`notion_bot_memory.json`) to SQLite database (`notion_bot_memory.db`).**
+- **Automatic context retention:** The bot now uses previous prompt/response pairs as context for new prompts, enabling more natural, continuous conversations.
+- **Reset command:** You can now reset the memory database with `python main.py reset`.
+- **No manual memory management required:** The database is created and updated automatically by the worker service.
+- **Persistence note:** On Railway, the database persists as long as the service is running, but may be lost on redeploy/restart unless persistent volumes are used.
+- **All references to the old JSON file have been removed from the codebase and documentation.**
+
+---
+
 ## [2.0.0] - 2025-07-06
 
 ### 🆕 New Features
@@ -21,7 +36,7 @@
 
 #### Memory System
 
-- **Persistent memory storage** in `notion_bot_memory.json`
+- **Persistent memory storage** in `notion_bot_memory.json` (replaced in 2.1.0 by SQLite)
 - **Similarity search** for finding similar previous prompts
 - **Statistics tracking** for total processed prompts
 - **Command-line interface** for viewing memory and searching

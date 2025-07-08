@@ -31,8 +31,9 @@ This lightweight Python bot continuously monitors a Notion database for new prom
 - **Continuous Polling**: Adaptive intervals (configurable)
 - **Web Interface**: Monitor status via browser (`app.py`)
 - **Code Extraction**: Automatically extracts and stores code blocks separately
-- **Memory System**: Tracks all prompts and responses for search and analysis
+- **Memory System (SQLite)**: Tracks all prompts and responses for search, context, and analysis
 - **Long Response Handling**: Smart splitting for responses over 1900 characters
+- **Contextual Chat**: Remembers previous prompts and responses for more natural conversations
 
 ---
 
@@ -75,10 +76,40 @@ This lightweight Python bot continuously monitors a Notion database for new prom
 
 ---
 
-## Troubleshooting
+## 🧠 Memory Retention & Context (New: SQLite-based)
 
-- Check logs in Railway/Render dashboard
-- Ensure both services are running and have the correct environment variables
+### 1. **How Memory Retention Works**
+
+- Every prompt and response is stored in a local SQLite database (`notion_bot_memory.db`).
+- When a new prompt is processed, the bot automatically retrieves the last few prompt/response pairs and sends them as context to ChatGPT. This allows the bot to "remember" the conversation and provide more relevant, contextual answers.
+- **You do not need to do anything special in Notion**—just keep adding prompts as usual. The bot will remember previous prompts and responses automatically.
+
+### 2. **How the Database Updates (Railway/Cloud)**
+
+- The SQLite database is updated automatically by the worker service running on Railway.
+- **No manual intervention is needed.**
+- Note: The database file is stored in the Railway service's filesystem. If the service is redeployed or restarted, the file may be lost unless you use Railway's persistent volumes (if available). For most use cases, the memory will persist as long as the service is running.
+
+### 3. **How to Reset the Memory (Start a New Chat)**
+
+- You can reset the memory (clear all previous prompts and responses) by running:
+  ```sh
+  python main.py reset
+  ```
+  - On Railway, you can trigger this by running a one-off job or using the Railway shell.
+- This will clear the SQLite database and the bot will "forget" all previous conversations, starting fresh.
+- **Note:** There is no way to reset memory from within Notion itself; the reset must be triggered via the command line.
+
+### 4. **Searching and Viewing Memory**
+
+- To view recent prompts:
+  ```sh
+  python main.py memory
+  ```
+- To search for previous prompts:
+  ```sh
+  python main.py search <query>
+  ```
 
 ---
 
@@ -89,8 +120,9 @@ notion-ai-bot/
 ├── main.py                 # Worker: Notion processor
 ├── app.py                  # Web: Dashboard/status page
 ├── extract_code.py         # Code extraction utility
-├── notion_bot_memory.json  # Memory storage (auto-created)
-├── extracted_code/         # Directory for extracted code files
+├── memory_db.py            # SQLite-based memory system
+├── notion_bot_memory.db    # SQLite database (auto-created)
+├── requirements.txt        # Python dependencies
 ├── NOTION_SETUP.md         # Database setup guide
 ├── DEPLOYMENT_GUIDE.md     # Deployment instructions
 ├── COST_MONITORING.md      # Cost optimization tips

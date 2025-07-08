@@ -46,6 +46,20 @@ git push origin main
 
 ---
 
+## Memory System (SQLite-based)
+
+- All prompts and responses are now stored in a local SQLite database: `notion_bot_memory.db`.
+- The bot uses this database to remember previous prompts and responses, providing context for new prompts automatically.
+- **No manual setup is required for memory.** The database is created and updated by the worker service.
+- To reset memory (start a new chat), run:
+  ```sh
+  python main.py reset
+  ```
+  (You can do this via the Railway shell or a one-off job.)
+- **Persistence Note:** On Railway, the database file is stored in the service's filesystem. If the service is redeployed or restarted, the file may be lost unless you use persistent volumes (if available). For most users, memory will persist as long as the service is running.
+
+---
+
 ## Render Deployment (Alternative)
 
 1. Go to [render.com](https://render.com)
@@ -85,6 +99,9 @@ git push origin main
   - Monitor OpenAI usage
   - Set spending limits in OpenAI dashboard
   - Reduce polling frequency if needed
+- **Memory not persisting?**
+  - On Railway, the SQLite database (`notion_bot_memory.db`) is stored in the service's filesystem. If you redeploy or restart the service, memory may be lost unless persistent volumes are used.
+  - To reset memory, use `python main.py reset`.
 
 ---
 
