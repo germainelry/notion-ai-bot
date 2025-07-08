@@ -13,6 +13,7 @@ A modern, async Python bot that connects Notion to OpenAI's ChatGPT, automating 
 - **Contextual memory**: Remembers previous prompts for better answers
 - **Persistent storage**: Uses SQLite for all prompt/response history
 - **Easy search & reset**: CLI tools to view, search, or reset memory
+- **Auto-reset on inactivity**: Memory can be reset automatically after a configurable period of inactivity
 
 ---
 
@@ -29,7 +30,7 @@ A modern, async Python bot that connects Notion to OpenAI's ChatGPT, automating 
    ```sh
    python main.py
    ```
-6. *(Optional)* **Run the web dashboard**
+6. _(Optional)_ **Run the web dashboard**
    ```sh
    python app.py
    ```
@@ -43,6 +44,7 @@ A modern, async Python bot that connects Notion to OpenAI's ChatGPT, automating 
 - `OPENAI_API_KEY` — Your OpenAI API key
 - `FAST_MODE` — (optional) Set to `1` for instant response
 - `CONTEXT_WINDOW` — (optional) Number of previous prompts to use as context (default: 5)
+- `INACTIVITY_RESET_HOURS` — (optional) Number of hours of inactivity before memory is automatically reset (default: 24)
 
 ---
 
@@ -70,7 +72,7 @@ A modern, async Python bot that connects Notion to OpenAI's ChatGPT, automating 
 
 - **Railway/Render:** Deploy `main.py` as a worker and `app.py` as a web service
 - **Add environment variables** to both services
-- *(Optional)* Use persistent volumes for long-term memory retention
+- _(Optional)_ Use persistent volumes for long-term memory retention
 - See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for details
 
 ---
@@ -79,6 +81,7 @@ A modern, async Python bot that connects Notion to OpenAI's ChatGPT, automating 
 
 - All prompts and responses are stored in a local SQLite database (`notion_bot_memory.db`)
 - The bot uses the last N prompt/response pairs as context for ChatGPT (configurable via `CONTEXT_WINDOW`)
+- **Automatic memory reset:** If no prompt is processed for a configurable period (`INACTIVITY_RESET_HOURS`), the memory is reset automatically.
 - For a full technical explanation, see [MEMORY_SYSTEM.md](MEMORY_SYSTEM.md)
 
 ---

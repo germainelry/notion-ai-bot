@@ -44,6 +44,22 @@ NOTION_UPDATE_DELAY_MIN = float(os.getenv("NOTION_UPDATE_DELAY_MIN", 1.0))
 NOTION_UPDATE_DELAY_MAX = float(os.getenv("NOTION_UPDATE_DELAY_MAX", 3.0))
 JITTER = float(os.getenv("JITTER", 5.0))
 CONTEXT_WINDOW = int(os.getenv("CONTEXT_WINDOW", 5))
+INACTIVITY_RESET_HOURS = int(os.getenv("INACTIVITY_RESET_HOURS", 24))
+LAST_ACTIVITY_FILE = "last_activity.txt"
+
+def update_last_activity():
+    with open(LAST_ACTIVITY_FILE, "w") as f:
+        f.write(datetime.now().isoformat())
+
+def get_last_activity():
+    if not os.path.exists(LAST_ACTIVITY_FILE):
+        return None
+    with open(LAST_ACTIVITY_FILE, "r") as f:
+        ts = f.read().strip()
+        try:
+            return datetime.fromisoformat(ts)
+        except Exception:
+            return None
 
 if FAST_MODE:
     MIN_POLL_INTERVAL = 2
@@ -279,6 +295,13 @@ async def continuous_polling():
     base_interval = MIN_POLL_INTERVAL
     while True:
         try:
+            # Inactivity auto-reset logic
+            last_activity = get_last_activity()
+            if last_activity and (datetime.now() - last_activity).total_seconds() > INACTIVITY_RESET_HOURS * 3600:
+                logging.info(f"No activity for {INACTIVITY_RESET_HOURS} hours. Resetting memory.")
+                await memory_db.clear()
+                update_last_activity()  # Reset the timer after clearing
+
             logging.info("Checking for prompts...")
             prompts = await get_pending_prompts()
             if prompts:
@@ -302,6 +325,7 @@ async def continuous_polling():
                         logging.info(f"Updated page: {page_id}")
                     else:
                         logging.error(f"Failed to update page: {page_id}")
+                    update_last_activity()  # Update on every processed prompt
                     await asyncio.sleep(random.uniform(PROMPT_DELAY_MIN, PROMPT_DELAY_MAX))
                 sleep_time = max(1, base_interval - 10)
             else:
