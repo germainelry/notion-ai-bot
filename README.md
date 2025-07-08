@@ -68,6 +68,46 @@ A modern, async Python bot that connects Notion to OpenAI's ChatGPT, automating 
 
 ---
 
+## Running CLI Commands in Railway (Locally)
+
+You can use the [Railway CLI](https://docs.railway.app/develop/cli) to link your local project to your Railway service and run commands in the Railway environment.
+
+### 1. **Install the Railway CLI**
+
+```sh
+npm install -g railway
+```
+
+### 2. **Login to Railway**
+
+```sh
+railway login
+```
+
+### 3. **Link Your Local Project to Railway**
+
+In your project directory:
+
+```sh
+railway link
+```
+
+Follow the prompts to select your Railway project.
+
+### 4. **Run Commands in the Railway Environment**
+
+You can now run commands in your Railway service environment using:
+
+```sh
+railway run python main.py memory
+railway run python main.py search <query>
+railway run python main.py reset
+```
+
+This will use your Railway environment variables and database, just like in production.
+
+---
+
 ## Deployment
 
 - **Railway/Render:** Deploy `main.py` as a worker and `app.py` as a web service
