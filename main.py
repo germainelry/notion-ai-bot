@@ -43,6 +43,7 @@ NOTION_QUERY_DELAY_MAX = float(os.getenv("NOTION_QUERY_DELAY_MAX", 2.0))
 NOTION_UPDATE_DELAY_MIN = float(os.getenv("NOTION_UPDATE_DELAY_MIN", 1.0))
 NOTION_UPDATE_DELAY_MAX = float(os.getenv("NOTION_UPDATE_DELAY_MAX", 3.0))
 JITTER = float(os.getenv("JITTER", 5.0))
+CONTEXT_WINDOW = int(os.getenv("CONTEXT_WINDOW", 5))
 
 if FAST_MODE:
     MIN_POLL_INTERVAL = 2
@@ -88,8 +89,9 @@ async def get_pending_prompts():
             return []
 
 async def ask_chatgpt_with_context(prompt):
-    # Fetch last 5 prompt/response pairs for context
-    recent_pairs = await memory_db.get_recent_prompts(limit=5)
+    # Fetch last CONTEXT_WINDOW prompt/response pairs for context
+    recent_pairs = await memory_db.get_recent_prompts(limit=CONTEXT_WINDOW)
+    recent_pairs = list(recent_pairs)  # Ensure it's a sequence for reversed()
     messages = []
     for prev_prompt, prev_response in reversed(recent_pairs):
         messages.append({"role": "user", "content": prev_prompt})

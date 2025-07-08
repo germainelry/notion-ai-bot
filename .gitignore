@@ -13,7 +13,7 @@ config.json
 notion_bot.log
 logs/
 
-# Python
+# Python cache and build
 __pycache__/
 *.py[cod]
 *$py.class
@@ -43,7 +43,7 @@ ENV/
 .venv/
 .env/
 
-# IDE
+# IDE/editor
 .vscode/
 .idea/
 *.swp
@@ -61,10 +61,11 @@ desktop.ini
 temp/
 tmp/
 
-# Database files
+# Database files (runtime, do not commit)
 *.db
 *.sqlite
 *.sqlite3
+notion_bot_memory.db
 
 # Backup files
 *.bak
@@ -94,9 +95,9 @@ coverage.xml
 .dmypy.json
 dmypy.json
 
-# Test files
-test_code_extraction.py
-
-# Memory and data files
+# Memory and data files (legacy)
 notion_bot_memory.json
-extracted_code/
+# extracted_code/  # Uncomment if you use this directory for extracted code
+
+# Test files (uncomment if you do not want to track test scripts)
+# test_code_extraction.py
