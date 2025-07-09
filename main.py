@@ -45,6 +45,8 @@ NOTION_UPDATE_DELAY_MAX = float(os.getenv("NOTION_UPDATE_DELAY_MAX", 3.0))
 JITTER = float(os.getenv("JITTER", 5.0))
 CONTEXT_WINDOW = int(os.getenv("CONTEXT_WINDOW", 5))
 INACTIVITY_RESET_HOURS = int(os.getenv("INACTIVITY_RESET_HOURS", 24))
+# New: Notion response block size (default 1900)
+NOTION_MAX_CHARS_PER_BLOCK = int(os.getenv("NOTION_MAX_CHARS_PER_BLOCK", 1900))
 LAST_ACTIVITY_FILE = "last_activity.txt"
 
 def update_last_activity():
@@ -193,7 +195,7 @@ async def update_response(page_id, response):
     code_output = format_code_output(extracted_codes)
     
     # Handle long responses
-    max_chars_per_block = 1900
+    max_chars_per_block = NOTION_MAX_CHARS_PER_BLOCK
     response_blocks = []
     
     if len(cleaned_response) <= max_chars_per_block:

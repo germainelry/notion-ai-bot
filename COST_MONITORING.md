@@ -56,7 +56,7 @@
 ### Reduce OpenAI Costs:
 
 - ✅ **Already optimized**: Using GPT-3.5-turbo (cheapest)
-- ✅ **Token limits**: 500 max tokens per response
+- ✅ **Token limits**: Recommended limit of 2000 max tokens per response
 - ✅ **Efficient polling**: Only calls API when needed
 - ✅ **No idle calls**: No unnecessary API requests
 
